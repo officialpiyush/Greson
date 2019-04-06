@@ -1,0 +1,19 @@
+{
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "discord.js": "discordjs/discord.js#5e9bd786d13f2da11544e45e4ac9622269259789",
+    "eslint": "^5.16.0",
+    "klasa": "dirigeants/klasa#b60b83309548f487ee2efd2c51ba5b24292aa7e0",
+    "util": "^0.11.1"
+  },
+  "name": "greson",
+  "version": "0.1.0",
+  "description": "A Multipurpose Discord Bot",
+  "main": "src/index.js",
+  "repository": "https://github.com/ionadev/Greson.git",
+  "author": "Piyush Bhangale",
+  "license": "GNU General Public License v3.0",
+  "private": true
+}
