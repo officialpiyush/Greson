@@ -2,13 +2,16 @@
 const express = require("express");
 const app = express();
 const cmd = require("node-cmd");
+const crypto = require("crypto"); // pre-installed node package
 
 app.post("/git", (req, res) => {
+    const hmac = crypto.createHmac("sha1", process.env.SECRET);
+    const sig = "sha1=" + hmac.update(JSON.stringify(req.body)).digest("hex");
     if (
         req.headers["x-github-event"] == "push" &&
-        process.env.secret == req.headers["x-hub-signature"]
+        sig == req.headers["x-hub-signature"]
     ) {
-        cmd.run("chmod 777 git.sh"); 
+        cmd.run("chmod 777 git.sh");
         cmd.get("./git.sh", (err, data) => {
             if (data) console.log(data);
             if (err) console.log(err);
