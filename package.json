@@ -8,6 +8,7 @@
     "eslint": "^5.16.0",
     "klasa": "dirigeants/klasa#b60b83309548f487ee2efd2c51ba5b24292aa7e0",
     "mongodb": "^3.2.3",
+    "node-cmd": "^3.0.0",
     "util": "^0.11.1"
   },
   "name": "greson",
