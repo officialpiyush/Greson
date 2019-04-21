@@ -1,9 +1,8 @@
 const { Command, Stopwatch, Type, util } = require("klasa");
 const { inspect } = require("util");
-const {postHastebin} = require("../../utils/utils");
+const { postHastebin } = require("../../utils/utils");
 
 module.exports = class extends Command {
-
     constructor(...args) {
         super(...args, {
             aliases: ["ev"],
@@ -18,48 +17,98 @@ module.exports = class extends Command {
 
     async run(msg, [code]) {
         const flagTime = "wait" in msg.flags ? Number(msg.flags.wait) : 30000;
-        const { success, result, time, type } = await this.timedEval(msg, code, flagTime);
+        const { success, result, time, type } = await this.timedEval(
+            msg,
+            code,
+            flagTime
+        );
 
         if (msg.flags.silent) {
-            if (!success && result && result.stack) this.client.emit("error", result.stack);
+            if (!success && result && result.stack)
+                this.client.emit("error", result.stack);
             return null;
         }
 
         const footer = util.codeBlock("ts", type);
-        const sendAs = msg.flags.output || msg.flags["output-to"] || (msg.flags.log ? "log" : null);
-        return this.handleMessage(msg, { sendAs, hastebinUnavailable: false, url: null }, { success, result, time, footer });
+        const sendAs =
+            msg.flags.output ||
+            msg.flags["output-to"] ||
+            (msg.flags.log ? "log" : null);
+        return this.handleMessage(
+            msg,
+            { sendAs, hastebinUnavailable: false, url: null },
+            { success, result, time, footer }
+        );
     }
 
     async handleMessage(msg, options, { success, result, time, footer }) {
         switch (options.sendAs) {
-            case "file": {
-                if (msg.channel.attachable) return msg.send(`**Type:**${footer}\n\n${time}`, { files: [{ attachment: Buffer.from(result), name: "output.txt" }] });
+        case "file": {
+            if (msg.channel.attachable)
+                return msg.send(`**Type:**${footer}\n\n${time}`, {
+                    files: [
+                        {
+                            attachment: Buffer.from(result),
+                            name: "output.txt"
+                        }
+                    ]
+                });
+            await this.getTypeOutput(msg, options);
+            return this.handleMessage(msg, options, {
+                success,
+                result,
+                time,
+                footer
+            });
+        }
+        case "haste":
+        case "hastebin": {
+            if (!options.url)
+                options.url = await postHastebin(
+                    this.client.config.misc.hastebin,
+                    result
+                ).catch(() => null);
+            if (options.url)
+                return msg.sendMessage(
+                    `**Output:**\n${
+                        options.url
+                    }\n\n**Type:**${footer}\n${time}`
+                );
+            options.hastebinUnavailable = true;
+            await this.getTypeOutput(msg, options);
+            return this.handleMessage(msg, options, {
+                success,
+                result,
+                time,
+                footer
+            });
+        }
+        case "console":
+        case "log": {
+            this.client.emit("log", result);
+            return msg.sendMessage(`${footer}\n${time}`);
+        }
+        case "none":
+            return null;
+        default: {
+            if (result.length > 2000) {
                 await this.getTypeOutput(msg, options);
-                return this.handleMessage(msg, options, { success, result, time, footer });
+                return this.handleMessage(msg, options, {
+                    success,
+                    result,
+                    time,
+                    footer
+                });
             }
-            case "haste":
-            case "hastebin": {
-                if (!options.url) options.url = await postHastebin(result).catch(() => null);
-                if (options.url) return msg.sendMessage(`**Output:**\n${options.url}\n\n**Type:**${footer}\n${time}`);
-                options.hastebinUnavailable = true;
-                await this.getTypeOutput(msg, options);
-                return this.handleMessage(msg, options, { success, result, time, footer });
-            }
-            case "console":
-            case "log": {
-                this.client.emit("log", result);
-                return msg.sendMessage(`${footer}\n${time}`);
-            }
-            case "none":
-                return null;
-            default: {
-                if (result.length > 2000) {
-                    await this.getTypeOutput(msg, options);
-                    return this.handleMessage(msg, options, { success, result, time, footer });
-                }
-                return msg.sendMessage(msg.language.get(success ? "COMMAND_EVAL_OUTPUT" : "COMMAND_EVAL_ERROR",
-                    time, util.codeBlock("js", result), footer));
-            }
+            return msg.sendMessage(
+                msg.language.get(
+                    success ? "COMMAND_EVAL_OUTPUT" : "COMMAND_EVAL_ERROR",
+                    time,
+                    util.codeBlock("js", result),
+                    footer
+                )
+            );
+        }
         }
     }
 
@@ -69,8 +118,25 @@ module.exports = class extends Command {
         if (!options.hastebinUnavailable) _options.push("hastebin");
         let _choice;
         do {
-            _choice = await msg.prompt(`Choose one of the following options: ${_options.join(", ")}`).catch(() => ({ content: "none" }));
-        } while (!["file", "haste", "hastebin", "console", "log", "default", "none", null].includes(_choice.content));
+            _choice = await msg
+                .prompt(
+                    `Choose one of the following options: ${_options.join(
+                        ", "
+                    )}`
+                )
+                .catch(() => ({ content: "none" }));
+        } while (
+            ![
+                "file",
+                "haste",
+                "hastebin",
+                "console",
+                "log",
+                "default",
+                "none",
+                null
+            ].includes(_choice.content)
+        );
         options.sendAs = _choice.content;
     }
 
@@ -78,7 +144,10 @@ module.exports = class extends Command {
         return Promise.race([
             util.sleep(flagTime).then(() => ({
                 success: false,
-                result: msg.language.get("COMMAND_EVAL_TIMEOUT", flagTime / 1000),
+                result: msg.language.get(
+                    "COMMAND_EVAL_TIMEOUT",
+                    flagTime / 1000
+                ),
                 time: "⏱ ...",
                 type: "EvalTimeoutError"
             })),
@@ -114,16 +183,25 @@ module.exports = class extends Command {
 
         stopwatch.stop();
         if (typeof result !== "string") {
-            result = result instanceof Error ? result.stack : inspect(result, {
-                depth: msg.flags.depth ? parseInt(msg.flags.depth) || 0 : 0,
-                showHidden: Boolean(msg.flags.showHidden)
-            });
+            result =
+                result instanceof Error
+                    ? result.stack
+                    : inspect(result, {
+                        depth: msg.flags.depth
+                            ? parseInt(msg.flags.depth) || 0
+                            : 0,
+                        showHidden: Boolean(msg.flags.showHidden)
+                    });
         }
-        return { success, type, time: this.formatTime(syncTime, asyncTime), result: util.clean(result) };
+        return {
+            success,
+            type,
+            time: this.formatTime(syncTime, asyncTime),
+            result: util.clean(result)
+        };
     }
 
     formatTime(syncTime, asyncTime) {
         return asyncTime ? `⏱ ${asyncTime}<${syncTime}>` : `⏱ ${syncTime}`;
     }
-
 };
