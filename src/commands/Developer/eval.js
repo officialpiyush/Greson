@@ -1,5 +1,6 @@
 const { Command, Stopwatch, Type, util } = require("klasa");
 const { inspect } = require("util");
+const cmd = require("node-cmd");
 const { postHastebin } = require("../../utils/utils");
 
 module.exports = class extends Command {
