@@ -4,6 +4,8 @@ const perms = require("../../utils/PermissionLevels");
 const Constants = require("../../utils/Constants");
 const config = require("../../config.json");
 
+const defaultGuildSchema = require("./schemas/defaultGuildSchema");
+
 module.exports = class GresonClient extends Client {
     constructor() {
         super({
@@ -20,7 +22,8 @@ module.exports = class GresonClient extends Client {
             typing: true,
             readyMessage: client => `Logged in as ${client.user.tag}`,
             prefixCaseInsensitive: true,
-            preserveSettings: false
+            preserveSettings: false,
+            defaultGuildSchema
         });
 
         this.constants = Constants;
