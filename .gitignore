@@ -1,3 +1,4 @@
 node_modules
 src/db_config.js
 src/config.json
+bwd/*
