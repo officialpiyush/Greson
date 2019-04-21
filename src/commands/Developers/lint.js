@@ -33,7 +33,7 @@ module.exports = class extends Command {
     }
 
     async run(msg, [...mes]) {
-        if (!codeblock.test(mes)) return;
+        if (!codeblock.test(mes)) return msg.reply("Only codeblocks are accepted!");
         mes = mes.join(" ");
         const {
             emotes: { tick, cross }
