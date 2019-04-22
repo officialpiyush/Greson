@@ -39,8 +39,10 @@ app.post("/git", (req, res) => {
         );
 
         const embed = new MessageEmbed()
-            .setDescription("> [GIT] Updated with origin/master\n")
-            .addField("Latest Commit", commits)
+            .setDescription(
+                "> [GIT] Updated with origin/master\n" +
+                    `        Latest commit: ${commits}`)
+            //.addField("Latest Commit", commits)
             .setColor("AQUA")
             .setTimestamp();
 
