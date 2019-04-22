@@ -3,6 +3,7 @@
     "start": "node src/index.js"
   },
   "dependencies": {
+    "body-parser": "^1.18.3",
     "common-tags": "^1.8.0",
     "discord.js": "discordjs/discord.js#5e9bd786d13f2da11544e45e4ac9622269259789",
     "eslint": "^5.16.0",

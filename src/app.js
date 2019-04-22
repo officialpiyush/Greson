@@ -1,15 +1,18 @@
 /* eslint-disable no-console */
 const express = require("express");
+const bodyParser = require("body-parser");
 const app = express();
 const cmd = require("node-cmd");
 const crypto = require("crypto"); // pre-installed node package
 
+app.use(bodyParser.json());
+
 app.post("/git", (req, res) => {
-   /* const hmac = crypto.createHmac("sha1", process.env.SECRET);
-    const sig = "sha1=" + hmac.update(JSON.stringify(req.body)).digest("hex");*/
+    const hmac = crypto.createHmac("sha1", process.env.SECRET);
+    const sig = "sha1=" + hmac.update(JSON.stringify(req.body)).digest("hex");
     if (
-        req.headers["x-github-event"] == "push" /*&&
-        sig == req.headers["x-hub-signature"] */
+        req.headers["x-github-event"] == "push" &&
+        sig == req.headers["x-hub-signature"] 
     ) {
         cmd.run("chmod 777 git.sh");
         cmd.get("./git.sh", (err, data) => {
