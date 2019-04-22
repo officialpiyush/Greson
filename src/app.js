@@ -7,7 +7,7 @@ const app = express();
 const cmd = require("node-cmd");
 const crypto = require("crypto"); // pre-installed node package
 
-const webhook = WebhookClient(...config.webhook.git);
+const webhook = new WebhookClient(...config.webhook.git);
 
 app.use(bodyParser.json());
 
