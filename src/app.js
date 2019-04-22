@@ -32,17 +32,15 @@ app.post("/git", (req, res) => {
                     .map((el, i) =>
                         i !== 0 ? "                       " + el : el
                     )
-                    .join("\n");
+                    .join("\n♦ ");
         console.log(
             "> [GIT] Updated with origin/master\n" +
                 `        Latest commit: ${commits}`
         );
 
         const embed = new MessageEmbed()
-            .setDescription(
-                "> [GIT] Updated with origin/master\n" +
-                    `        Latest commit: ${commits}`)
-            //.addField("Latest Commit", commits)
+            .setDescription("> [GIT] Updated with origin/master\n")
+            .addField("Latest Commits" , `♦ ${commits}`)
             .setColor("AQUA")
             .setTimestamp();
 
