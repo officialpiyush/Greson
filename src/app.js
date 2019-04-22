@@ -14,8 +14,8 @@ app.post("/git", (req, res) => {
         req.headers["x-github-event"] == "push" &&
         sig == req.headers["x-hub-signature"] 
     ) {
-        cmd.run("chmod 777 git.sh");
-        cmd.get("./git.sh", (err, data) => {
+        cmd.run("cd src && chmod 777 git.sh");
+        cmd.get("cd src && ./git.sh", (err, data) => {
             if (data) console.log(data);
             if (err) console.log(err);
         });
