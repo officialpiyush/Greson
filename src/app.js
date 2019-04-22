@@ -1,9 +1,13 @@
 /* eslint-disable no-console */
 const express = require("express");
 const bodyParser = require("body-parser");
+const { WebhookClient, MessageEmbed } = require("discord.js");
+const config = require("./config.json");
 const app = express();
 const cmd = require("node-cmd");
 const crypto = require("crypto"); // pre-installed node package
+
+const webhook = WebhookClient(...config.webhook.git);
 
 app.use(bodyParser.json());
 
@@ -12,7 +16,7 @@ app.post("/git", (req, res) => {
     const sig = "sha1=" + hmac.update(JSON.stringify(req.body)).digest("hex");
     if (
         req.headers["x-github-event"] == "push" &&
-        sig == req.headers["x-hub-signature"] 
+        sig == req.headers["x-hub-signature"]
     ) {
         cmd.run("cd src && chmod 777 git.sh");
         cmd.get("cd src && ./git.sh", (err, data) => {
@@ -33,6 +37,14 @@ app.post("/git", (req, res) => {
             "> [GIT] Updated with origin/master\n" +
                 `        Latest commit: ${commits}`
         );
+
+        const embed = new MessageEmbed()
+            .setDescription("> [GIT] Updated with origin/master\n")
+            .addField("Latest Commit", commits)
+            .setColor("AQUA")
+            .setTimestamp();
+
+        webhook.send(embed);
     }
     return res.sendStatus(200);
 });
